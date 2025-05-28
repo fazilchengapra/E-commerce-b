@@ -13,11 +13,11 @@ exports.authMiddleware = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    if (!decoded.adminId || !decoded.role) {
+    if (!decoded.userId || !decoded.role) {
       return res.status(401).json({ message: "Invalid token payload" });
     }
 
-    req.adminId = decoded.adminId;
+    req.userId = decoded.userId;
     req.role = decoded.role;
     next();
   } catch (error) {

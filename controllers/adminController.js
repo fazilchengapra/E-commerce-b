@@ -45,7 +45,7 @@ exports.loginAdmin = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
-      { adminId: admin._id, role: admin.role },
+      { userId: admin._id, role: admin.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -76,7 +76,7 @@ exports.loginAdmin = async (req, res) => {
 // Get admin profile
 exports.getProfile = async (req, res) => {
   try {
-    const admin = await Admin.findById(req.adminId).select("-password");
+    const admin = await Admin.findById(req.userId).select("-password");
     if (!admin) return res.status(404).json({ message: "Admin not found" });
 
     res.status(200).json(admin);
@@ -93,7 +93,7 @@ exports.updateProfile = async (req, res) => {
         throw new Error("Password cannot be updated here. Use changePassword endpoint.");
     }
 
-    const updatedAdmin = await Admin.findByIdAndUpdate(req.adminId, updates, {
+    const updatedAdmin = await Admin.findByIdAndUpdate(req.userId, updates, {
       new: true,
       runValidators: true,
     }).select("-password");
@@ -109,7 +109,7 @@ exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const admin = await Admin.findById(req.adminId);
+    const admin = await Admin.findById(req.userId);
     if (!admin) return res.status(404).json({ message: "Admin not found" });
 
     const isMatch = await bcrypt.compare(currentPassword, admin.password);

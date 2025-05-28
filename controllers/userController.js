@@ -1,6 +1,7 @@
 const User = require("../model/Users");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 // Register a new user
 exports.registerUser = async (req, res) => {
@@ -44,7 +45,7 @@ exports.loginUser = async (req, res) => {
 
     const token = jwt.sign(
       { userId: user._id, role: user.role },
-      "your_jwt_secret",
+      process.env.JWT_SECRET,
       {
         expiresIn: "7d",
       }
@@ -58,6 +59,40 @@ exports.loginUser = async (req, res) => {
     });
 
     res.status(200).json({ message: "Login successful", token, user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get logged-in user's profile
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Update logged-in user's profile
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const updates = req.body;
+
+    if (updates.password) {
+      updates.password = await bcrypt.hash(updates.password, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(req.userId, updates, {
+      new: true,
+      runValidators: true
+    }).select('-password');
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json({ message: 'Profile updated', user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
