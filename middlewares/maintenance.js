@@ -13,9 +13,8 @@ const maintenanceMiddleware = async (req, res, next) => {
       const isAdmin = req.role === "superadmin"; // assuming `authMiddleware` already sets `req.role`
 
       if (setting.allowAdmin && isAdmin) {
-        
-        if (exemptPaths.includes(req.path)){
-            return next(); // allow admin to access exempt paths
+        if (exemptPaths.includes(req.path)) {
+          return next(); // allow admin to access exempt paths
         }
       }
 
