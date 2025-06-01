@@ -13,6 +13,7 @@ const brandController = require("../controllers/brandController");
 const productController = require("../controllers/productController");
 const userController = require("../controllers/userController");
 const flashSaleController = require("../controllers/flashSaleController");
+const orderController = require("../controllers/orderController");
 
 // account management
 router.get("/profile", adminController.getProfile);
@@ -54,5 +55,9 @@ router.get("/flashSale/", flashSaleController.getFlashSales); // Get all flash s
 router.get("/flashSale/:id", flashSaleController.getFlashSaleById); // Get a single flash sale by id
 router.put("/flashSale/:id", flashSaleController.updateFlashSale); // Update flash sale by id
 router.delete("/flashSale/:id", flashSaleController.deleteFlashSale); // Delete flash sale by id
+
+// Admin order management
+router.get('/orders', orderController.getAllOrders);
+router.put('/order/:id/status', orderController.updateOrderStatus);
 
 module.exports = router;

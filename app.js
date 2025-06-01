@@ -13,6 +13,7 @@ var adminAuthRouter = require("./routes/adminAuth");
 const maintenanceMiddleware = require("./middlewares/maintenance");
 const { authMiddleware } = require("./middlewares/auth");
 const { isSuperAdmin } = require("./middlewares/isSuperAdmin");
+const { isCustomer } = require("./middlewares/isCustomer");
 
 var app = express();
 
@@ -25,7 +26,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/api/public", maintenanceMiddleware, publicRouter);
 app.use("/api/user/auth", usersAuthRouter);
-app.use("/api/user", authMiddleware, maintenanceMiddleware, userRouter);
+app.use("/api/user", authMiddleware,isCustomer, maintenanceMiddleware, userRouter);
 app.use("/api/admin/auth", adminAuthRouter);
 app.use(
   "/api/admin",
