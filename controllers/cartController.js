@@ -1,27 +1,40 @@
 // controllers/cartController.js
 const Cart = require("../model/Cart");
 const Product = require("../model/Product");
+const FlashSale = require("../model/FlashSale"); // Assuming you have a FlashSale model
 
 // 1. Add or update product in cart
 exports.addToCart = async (req, res) => {
   try {
-    const { productId, quantity, selectedVariant } = req.body;
-    const userId = req.userId; // assume user is already authenticated
+    const { productId, quantity = 1, selectedVariant } = req.body;
+    const userId = req.userId; // assume user is authenticated
 
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    let cart = await Cart.findOne({ user: userId });
+    // ✅ Check for active flash sale
+    const now = new Date();
+    const flashSale = await FlashSale.findOne({
+      product: productId,
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+    });
+
+    const finalPrice = flashSale
+      ? flashSale.salePrice
+      : product.price * (1 - product.discount / 100);
 
     const newItem = {
       product: productId,
-      quantity: quantity || 1,
+      quantity,
       selectedVariant,
-      priceAtAddition: product.price,
+      priceAtAddition: finalPrice, // ✅ Use flash sale price or discounted price
+      isFlashSale: !!flashSale, // optional: track whether flash sale was applied
     };
 
+    let cart = await Cart.findOne({ user: userId });
+
     if (!cart) {
-      // Create new cart
       cart = new Cart({
         user: userId,
         items: [newItem],
@@ -35,7 +48,6 @@ exports.addToCart = async (req, res) => {
       );
 
       if (index > -1) {
-        // If item exists (with same variant), update quantity
         cart.items[index].quantity += quantity;
       } else {
         cart.items.push(newItem);

@@ -2,6 +2,7 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto"); // <-- Added import
 const Order = require("../model/Order");
 const Product = require("../model/Product");
+const FlashSale = require("../model/FlashSale");
 const { log } = require("console");
 require("dotenv").config();
 
@@ -12,11 +13,23 @@ const razorpay = new Razorpay({
 });
 
 // 🧾 Helper: Calculate final price for each item (price after discount * quantity)
-const calculateItemTotal = (product, quantity) => {
-  const price = product.discount
+const calculateItemTotal = async (product, quantity) => {
+  const now = new Date();
+
+  // 🔍 Check if the product is in a flash sale
+  const flashSale = await FlashSale.findOne({
+    product: product._id,
+    startDate: { $lte: now },
+    endDate: { $gte: now },
+  });
+
+  const finalPrice = flashSale
+    ? flashSale.salePrice
+    : product.discount
     ? product.price * (1 - product.discount / 100)
     : product.price;
-  return price * quantity;
+
+  return finalPrice * quantity;
 };
 
 // 📦 Create Razorpay Order (client initiates payment)
@@ -169,7 +182,7 @@ exports.createCODOrder = async (req, res) => {
         const product = await Product.findById(item.product);
         if (!product) throw new Error("Product not found");
 
-        const itemTotal = calculateItemTotal(product, item.quantity);
+        const itemTotal = await calculateItemTotal(product, item.quantity);
         totalPrice += itemTotal;
 
         return {
@@ -224,7 +237,7 @@ exports.getMyOrders = async (req, res) => {
 // 🔍 Get Order by ID (User/Admin)
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id)
+    const order = await Order.findById(req.params.id);
     log("getOrderById order:", order);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
@@ -243,28 +256,52 @@ exports.getOrderById = async (req, res) => {
 // 🔁 Admin: Update Order Status
 exports.updateOrderStatus = async (req, res) => {
   try {
-    const { status } = req.body;
-    const validStatuses = [
+    const { status, paymentStatus } = req.body;
+
+    const validOrderStatuses = [
       "pending",
       "processing",
       "shipped",
       "delivered",
       "cancelled",
     ];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
+    const validPaymentStatuses = ["pending", "paid", "failed"];
+
+    // Validate status
+    if (status && !validOrderStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid order status" });
+    }
+
+    if (paymentStatus && !validPaymentStatuses.includes(paymentStatus)) {
+      return res.status(400).json({ message: "Invalid payment status" });
     }
 
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    order.orderStatus = status;
-    if (status === "delivered") {
-      order.deliveredAt = Date.now();
+    // ✅ Update order status
+    if (status) {
+      order.orderStatus = status;
+      if (status === "delivered") {
+        order.deliveredAt = new Date();
+      }
+    }
+
+    // ✅ Update payment status
+    if (paymentStatus) {
+      order.paymentStatus = paymentStatus;
+      if (paymentStatus === "paid" && !order.paidAt) {
+        order.paidAt = new Date();
+      }
     }
 
     await order.save();
-    res.json({ message: "Status updated", success: true, order });
+
+    res.json({
+      message: "Order updated successfully",
+      success: true,
+      order,
+    });
   } catch (err) {
     console.error("updateOrderStatus error:", err);
     res.status(500).json({ message: "Server Error", error: err.message });

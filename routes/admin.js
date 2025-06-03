@@ -14,6 +14,8 @@ const productController = require("../controllers/productController");
 const userController = require("../controllers/userController");
 const flashSaleController = require("../controllers/flashSaleController");
 const orderController = require("../controllers/orderController");
+const { getSalesAnalytics } = require("../controllers/saleController");
+const { getTodaySales } = require("../controllers/todaySaleController");
 
 // account management
 router.get("/profile", adminController.getProfile);
@@ -59,5 +61,9 @@ router.delete("/flashSale/:id", flashSaleController.deleteFlashSale); // Delete 
 // Admin order management
 router.get('/orders', orderController.getAllOrders);
 router.put('/order/:id/status', orderController.updateOrderStatus);
+
+// Admin analytics
+router.get('/analytics/sales/today', getTodaySales);
+router.get('/analytics/sales', getSalesAnalytics);
 
 module.exports = router;
