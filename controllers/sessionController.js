@@ -32,3 +32,22 @@ exports.logSession = async (req) => {
     console.error('Error logging session:', error.message);
   }
 };
+
+// For admin dashboard: sessions grouped by country
+exports.getSessionsByCountry = async (req, res) => {
+  try {
+    const stats = await Session.aggregate([
+      {
+        $group: {
+          _id: '$country',
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching session stats' });
+  }
+};
