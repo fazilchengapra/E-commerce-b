@@ -1,11 +1,13 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const { getVisitors } = require("../utils/logVisitor");
+const logVisitor = require("../utils/logVisitor");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-exports.authMiddleware = (req, res, next) => {
+exports.authMiddleware = async(req, res, next) => {
   const token = req.cookies.token;
-
+  
   if (!token) {
     return res.status(401).json({ message: "Access denied. No token provided." });
   }
@@ -19,6 +21,7 @@ exports.authMiddleware = (req, res, next) => {
 
     req.userId = decoded.userId;
     req.role = decoded.role;
+    await logVisitor(req)
     next();
   } catch (error) {
     console.error("JWT Error:", error.message);

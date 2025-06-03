@@ -16,6 +16,7 @@ const flashSaleController = require("../controllers/flashSaleController");
 const orderController = require("../controllers/orderController");
 const { getSalesAnalytics } = require("../controllers/saleController");
 const { getTodaySales } = require("../controllers/todaySaleController");
+const { getVisitors } = require("../controllers/todayVisitorsController");
 
 // account management
 router.get("/profile", adminController.getProfile);
@@ -63,6 +64,7 @@ router.get('/orders', orderController.getAllOrders);
 router.put('/order/:id/status', orderController.updateOrderStatus);
 
 // Admin analytics
+router.get('/analytics/todayVisitors', getVisitors);
 router.get('/analytics/sales/today', getTodaySales);
 router.get('/analytics/sales', getSalesAnalytics);
 

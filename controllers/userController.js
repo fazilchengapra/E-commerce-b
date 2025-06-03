@@ -32,7 +32,7 @@ exports.registerUser = async (req, res) => {
 };
 
 // Login a user
-exports.loginUser = async (req, res) => {
+exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -59,6 +59,7 @@ exports.loginUser = async (req, res) => {
     });
 
     res.status(200).json({ message: "Login successful", token, user });
+    next();
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
