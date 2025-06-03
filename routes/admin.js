@@ -17,7 +17,8 @@ const orderController = require("../controllers/orderController");
 const { getSalesAnalytics } = require("../controllers/saleController");
 const { getTodaySales } = require("../controllers/todaySaleController");
 const { getVisitors } = require("../controllers/todayVisitorsController");
-const { getSessionsByCountry } = require("../controllers/sessionController");
+const { getSessionsByCountry, getSessionsByDevice } = require("../controllers/sessionController");
+const { getLatestCustomers } = require("../controllers/latestCustomerController");
 
 // account management
 router.get("/profile", adminController.getProfile);
@@ -69,6 +70,8 @@ router.get('/analytics/todayVisitors', getVisitors);
 router.get('/analytics/byCountry', getSessionsByCountry);
 router.get('/analytics/sales/today', getTodaySales);
 router.get('/analytics/sales', getSalesAnalytics);
+router.get('/analytics/latestCustomers', getLatestCustomers);
+router.get('/analytics/sessionDevice', getSessionsByDevice);
 
 
 module.exports = router;

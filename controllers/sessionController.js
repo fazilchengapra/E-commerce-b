@@ -1,20 +1,19 @@
-const axios = require('axios');
-const Session = require('../model/Session');
+const axios = require("axios");
+const Session = require("../model/Session");
+const UAParser = require('ua-parser-js');
 
 exports.logSession = async (req) => {
   try {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    const userAgent = req.headers['user-agent'] || 'unknown';
+    const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    const userAgent = req.headers["user-agent"] || "unknown";
+    const parser = new UAParser(userAgent);
+    const deviceType = parser.getDevice().type || "Desktop"; // fallback if undefined
 
     const geo = await axios.get(`https://ipapi.co/${ip}/json/`);
-    console.log(geo.data);
-    
-    const country = geo.data.country_name || 'Unknown';
-    const region = geo.data.region || '';
-    const city = geo.data.city || '';
-    
+    const country = geo.data.country_name || "Unknown";
+    const region = geo.data.region || "";
+    const city = geo.data.city || "";
 
-    // Upsert: update if exists, else create
     await Session.findOneAndUpdate(
       { user: req.userId },
       {
@@ -23,13 +22,13 @@ exports.logSession = async (req) => {
         region,
         city,
         userAgent,
-        updatedAt: new Date()
+        deviceType: deviceType.charAt(0).toUpperCase() + deviceType.slice(1), // e.g., "mobile" -> "Mobile"
+        updatedAt: new Date(),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
-
   } catch (error) {
-    console.error('Error logging session:', error.message);
+    console.error("Error logging session:", error.message);
   }
 };
 
@@ -39,15 +38,35 @@ exports.getSessionsByCountry = async (req, res) => {
     const stats = await Session.aggregate([
       {
         $group: {
-          _id: '$country',
-          count: { $sum: 1 }
-        }
+          _id: "$country",
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { count: -1 } }
+      { $sort: { count: -1 } },
     ]);
 
     res.json(stats);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching session stats' });
+    res.status(500).json({ message: "Error fetching session stats" });
+  }
+};
+
+exports.getSessionsByDevice = async (req, res) => {
+  try {
+    const stats = await Session.aggregate([
+      {
+        $group: {
+          _id: "$deviceType",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching device session stats" });
   }
 };
