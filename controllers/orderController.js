@@ -4,6 +4,7 @@ const Order = require("../model/Order");
 const Product = require("../model/Product");
 const FlashSale = require("../model/FlashSale");
 const { log } = require("console");
+const generateInvoiceId = require("../utils/generateInvoiceId");
 require("dotenv").config();
 
 // Initialize Razorpay
@@ -293,6 +294,14 @@ exports.updateOrderStatus = async (req, res) => {
       if (paymentStatus === "paid" && !order.paidAt) {
         order.paidAt = new Date();
       }
+    }
+
+    if (
+      !order.invoiceId &&
+      order.paymentStatus === "paid" &&
+      order.orderStatus === "delivered"
+    ) {
+      order.invoiceId = await generateInvoiceId();
     }
 
     await order.save();
