@@ -5,6 +5,7 @@ const userController = require("../controllers/userController");
 const cartController = require("../controllers/cartController");
 const addressController = require("../controllers/addressController");
 const orderController = require("../controllers/orderController");
+const { createMessage, getMyMessages, updateMyMessage } = require("../controllers/messageController");
 
 // respond only authenticated users
 
@@ -32,5 +33,10 @@ router.post("/placeOrder", orderController.placeOrderAfterPayment); // Place ord
 router.post("/codOrder", orderController.createCODOrder); // Create COD order
 router.get("/myOrders", orderController.getMyOrders); // Get user's orders
 router.get("/order/:id", orderController.getOrderById); // Get order by ID (User/Admin)
+
+// complaint message routes
+router.post("/messages", createMessage); // Create a new complaint message
+router.patch("/my/messages/:id", updateMyMessage); // Get a specific message by ID (User/Admin)
+router.get("/my/messages", getMyMessages); // Get logged-in user's messages
 
 module.exports = router;

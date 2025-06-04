@@ -20,6 +20,7 @@ const { getVisitors } = require("../controllers/todayVisitorsController");
 const { getSessionsByCountry, getSessionsByDevice, getRecentDevices } = require("../controllers/sessionController");
 const { getLatestCustomers } = require("../controllers/latestCustomerController");
 const { getTransactionHistory } = require("../controllers/transactionController");
+const { getAllMessages, markAsRead, replyToMessage, deleteMessageById, bulkDeleteMessages } = require("../controllers/messageController");
 
 // account management
 router.get("/profile", adminController.getProfile);
@@ -76,5 +77,11 @@ router.get('/analytics/sessionDevice', getSessionsByDevice);
 router.get('/analytics/transactions', getTransactionHistory);
 router.get('/analytics/recentDevices', getRecentDevices);
 
+// message management
+router.get("/messages", getAllMessages); // Get all messages
+router.patch("/messages/:id/read", markAsRead); // Mark a message as read by ID
+router.patch("/messages/:id/replay", replyToMessage); // Reply to a message by ID
+router.delete("/messages/:id", deleteMessageById); // Delete a message by ID
+router.post("/messages/bulkDelete", bulkDeleteMessages); // Delete a message by ID
 
 module.exports = router;
