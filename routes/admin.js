@@ -17,10 +17,25 @@ const orderController = require("../controllers/orderController");
 const { getSalesAnalytics } = require("../controllers/saleController");
 const { getTodaySales } = require("../controllers/todaySaleController");
 const { getVisitors } = require("../controllers/todayVisitorsController");
-const { getSessionsByCountry, getSessionsByDevice, getRecentDevices } = require("../controllers/sessionController");
-const { getLatestCustomers } = require("../controllers/latestCustomerController");
-const { getTransactionHistory } = require("../controllers/transactionController");
-const { getAllMessages, markAsRead, replyToMessage, deleteMessageById, bulkDeleteMessages } = require("../controllers/messageController");
+const {
+  getSessionsByCountry,
+  getSessionsByDevice,
+  getRecentDevices,
+} = require("../controllers/sessionController");
+const {
+  getLatestCustomers,
+} = require("../controllers/latestCustomerController");
+const {
+  getTransactionHistory,
+} = require("../controllers/transactionController");
+const {
+  getAllMessages,
+  markAsRead,
+  replyToMessage,
+  deleteMessageById,
+  bulkDeleteMessages,
+} = require("../controllers/messageController");
+const { getInvoiceByOrderId } = require("../controllers/invoiceController");
 
 // account management
 router.get("/profile", adminController.getProfile);
@@ -64,18 +79,18 @@ router.put("/flashSale/:id", flashSaleController.updateFlashSale); // Update fla
 router.delete("/flashSale/:id", flashSaleController.deleteFlashSale); // Delete flash sale by id
 
 // Admin order management
-router.get('/orders', orderController.getAllOrders);
-router.put('/order/:id/status', orderController.updateOrderStatus);
+router.get("/orders", orderController.getAllOrders);
+router.put("/order/:id/status", orderController.updateOrderStatus);
 
 // Admin analytics
-router.get('/analytics/todayVisitors', getVisitors);
-router.get('/analytics/byCountry', getSessionsByCountry);
-router.get('/analytics/sales/today', getTodaySales);
-router.get('/analytics/sales', getSalesAnalytics);
-router.get('/analytics/latestCustomers', getLatestCustomers);
-router.get('/analytics/sessionDevice', getSessionsByDevice);
-router.get('/analytics/transactions', getTransactionHistory);
-router.get('/analytics/recentDevices', getRecentDevices);
+router.get("/analytics/todayVisitors", getVisitors);
+router.get("/analytics/byCountry", getSessionsByCountry);
+router.get("/analytics/sales/today", getTodaySales);
+router.get("/analytics/sales", getSalesAnalytics);
+router.get("/analytics/latestCustomers", getLatestCustomers);
+router.get("/analytics/sessionDevice", getSessionsByDevice);
+router.get("/analytics/transactions", getTransactionHistory);
+router.get("/analytics/recentDevices", getRecentDevices);
 
 // message management
 router.get("/messages", getAllMessages); // Get all messages
@@ -83,5 +98,8 @@ router.patch("/messages/:id/read", markAsRead); // Mark a message as read by ID
 router.patch("/messages/:id/replay", replyToMessage); // Reply to a message by ID
 router.delete("/messages/:id", deleteMessageById); // Delete a message by ID
 router.post("/messages/bulkDelete", bulkDeleteMessages); // Delete a message by ID
+
+// invoice download route
+router.get("/invoice/:id", getInvoiceByOrderId); // Download invoice by order ID
 
 module.exports = router;

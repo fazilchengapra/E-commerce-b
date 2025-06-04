@@ -6,6 +6,7 @@ const cartController = require("../controllers/cartController");
 const addressController = require("../controllers/addressController");
 const orderController = require("../controllers/orderController");
 const { createMessage, getMyMessages, updateMyMessage } = require("../controllers/messageController");
+const { getInvoiceByOrderId } = require("../controllers/invoiceController");
 
 // respond only authenticated users
 
@@ -38,5 +39,8 @@ router.get("/order/:id", orderController.getOrderById); // Get order by ID (User
 router.post("/messages", createMessage); // Create a new complaint message
 router.patch("/my/messages/:id", updateMyMessage); // Get a specific message by ID (User/Admin)
 router.get("/my/messages", getMyMessages); // Get logged-in user's messages
+
+// invoice download route
+router.get("/invoice/:id", getInvoiceByOrderId); // Download invoice by order ID
 
 module.exports = router;
