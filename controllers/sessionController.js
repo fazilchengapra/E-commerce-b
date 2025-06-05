@@ -2,7 +2,7 @@ const axios = require("axios");
 const Session = require("../model/Session");
 const UAParser = require("ua-parser-js");
 
-exports.logSession = async (req, userId) => {
+exports.logSession = async (req) => {
   try {
     const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
     const userAgent = req.headers["user-agent"] || "unknown";
@@ -20,7 +20,7 @@ exports.logSession = async (req, userId) => {
     const city = geo.data.city || "";
 
     await Session.findOneAndUpdate(
-      { user: userId, userAgent }, // one entry per device/browser
+      { user: req.userId, userAgent }, // one entry per device/browser
       {
         ipAddress: ip,
         country,
